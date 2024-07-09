@@ -14,7 +14,7 @@ def call(Map config = [:]) {
             stage('Git Clone') {
                 steps {
                     // git branch: 'main', url: 'https://github.com/SattyaPiseth/nuxt-framework.git'
-                    git branch: 'main', url: 'https://gitlab.com/ecommerce7750702/frontend.git'
+                    git branch: 'default', url: 'https://gitlab.com/ecommerce7750702/frontend.git'
                 }
             }
 
