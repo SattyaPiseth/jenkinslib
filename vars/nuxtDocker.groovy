@@ -13,7 +13,8 @@ def call(Map config = [:]) {
         stages {
             stage('Git Clone') {
                 steps {
-                    git branch: 'main', url: 'https://github.com/SattyaPiseth/nuxt-framework.git'
+                    // git branch: 'main', url: 'https://github.com/SattyaPiseth/nuxt-framework.git'
+                    git branch: 'production', url: 'https://gitlab.com/farrizartmeth/ecogrow-marketplace.git'
                 }
             }
 
