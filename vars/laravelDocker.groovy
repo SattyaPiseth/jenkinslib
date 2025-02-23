@@ -21,7 +21,7 @@ def call(Map config = [:]) {
                 steps {
                     script {
                         def writeDockerfile = {
-                            def dockerfileContent = readFile 'laravel.dockerfile'  // Read from repo
+                            def dockerfileContent = readFile 'jenkinslib/resources/laravel.dockerfile'  // Read from repo
                             writeFile file: 'Dockerfile', text: dockerfileContent
                         }
                         writeDockerfile()
