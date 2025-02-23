@@ -6,5 +6,5 @@ laravelDocker(
     tag: 'latest',
     containerPort: '9000',
     hostPort: '8080',
-    projectName: 'laravel-project'
+    projectName: 'laravel_first_project'
 )
