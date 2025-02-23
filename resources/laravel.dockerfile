@@ -2,26 +2,31 @@
 FROM composer:2 AS builder
 WORKDIR /app
 
-# Copy composer files and install dependencies without dev packages
+# Copy composer files and install dependencies
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --prefer-dist --no-scripts --no-interaction
 
-# Copy the rest of the application code and optimize the autoloader
+# Copy application source
 COPY . .
 RUN composer dump-autoload --optimize
 
 # Stage 2: Production Stage
-FROM php:7.4-fpm-alpine
+FROM php:8.2-fpm-alpine
 
-# Install system dependencies and PHP extensions required by Laravel
+# Install required dependencies and PHP extensions
 RUN apk add --no-cache \
+    bash \
+    nginx \
+    supervisor \
+    zip unzip \
     libpng-dev \
     libjpeg-turbo-dev \
     freetype-dev \
     libzip-dev \
     oniguruma-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo_mysql mbstring zip gd
+    && docker-php-ext-install pdo_mysql mbstring zip gd \
+    && apk del --no-cache .build-deps
 
 # Set working directory
 WORKDIR /var/www
@@ -29,11 +34,11 @@ WORKDIR /var/www
 # Copy optimized application files from the builder stage
 COPY --from=builder /app /var/www
 
-# Ensure the www-data user owns the application files for security
+# Set permissions
 RUN chown -R www-data:www-data /var/www
 
-# Expose port 9000 (PHP-FPM)
+# Expose ports
 EXPOSE 9000
 
-# Start PHP-FPM
+# Run supervisord for process management
 CMD ["php-fpm"]
