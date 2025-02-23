@@ -17,10 +17,18 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
+        stage('Checkout Jenkins Library') {
             steps {
-                echo "Checking out repository: ${GIT_REPO}..."
-                git url: "${GIT_REPO}"
+                echo "Cloning Jenkins shared library repository..."
+                // This stage checks out the shared library. Adjust as needed.
+                git url: "https://github.com/SattyaPiseth/jenkinslib.git", branch: 'main'
+            }
+        }
+        stage('Checkout Laravel Project') {
+            steps {
+                echo "Checking out repository: ${GIT_REPO} on branch 'main'..."
+                // Explicitly checkout the 'main' branch from your Laravel repository.
+                git branch: 'main', url: "${GIT_REPO}"
             }
         }
         stage('Build Docker Image') {
