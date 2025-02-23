@@ -3,7 +3,7 @@ def call(Map config = [:]) {
     def image = config.get('image', 'my-default-image')
     def registry = config.get('registry', 'my-default-registry')
     def tag = config.get('tag', 'latest')
-    def containerPort = config.get('containerPort', '8080')
+    def containerPort = config.get('containerPort', '9000')
     def hostPort = config.get('hostPort', '8080')
     def projectName = config.get('projectName', 'my-default-projectName')
 
@@ -21,7 +21,7 @@ def call(Map config = [:]) {
                 steps {
                     script {
                         def writeDockerfile = {
-                            def dockerfileContent = libraryResource 'laravel.dockerfile'
+                            def dockerfileContent = readFile 'laravel.dockerfile'  // Read from repo
                             writeFile file: 'Dockerfile', text: dockerfileContent
                         }
                         writeDockerfile()
@@ -45,7 +45,7 @@ def call(Map config = [:]) {
                     script {
                         withCredentials([usernamePassword(credentialsId: 'docker-hub', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
                             sh """
-                                docker login -u ${USER} -p ${PASS}
+                                echo ${PASS} | docker login -u ${USER} --password-stdin
                                 docker push ${registry}/${image}:${tag}
                             """
                         }
@@ -53,14 +53,29 @@ def call(Map config = [:]) {
                 }
             }
 
-            stage('Deploy Docker Container') {
+            stage('Run Docker Container') {
                 steps {
                     script {
-                        echo "Deploying Docker container: ${registry}/${image}:${tag}"
+                        echo "Running Docker container..."
+
+                        def availablePort = hostPort.toInteger()
+
+                        // Loop until a free port is found
+                        while (sh(script: "docker ps --format '{{.Ports}}' | grep -q ':${availablePort}->'", returnStatus: true) == 0) {
+                            echo "Port ${availablePort} is in use. Trying next port..."
+                            availablePort++
+                        }
+
+                        echo "Port ${availablePort} is available. Starting container..."
+
+                        // Run the container mapping the available host port to the container port
                         sh """
-                            docker rm -f ${image} || true
-                            docker run -d -p ${hostPort}:${containerPort} --name ${image} ${registry}/${image}:${tag}
+                        docker rm -f ${image} || true
+                        docker run -d --name ${image} -p ${availablePort}:${containerPort} ${registry}/${image}:${tag} || \
+                        echo 'Failed to start container. Check logs for details.'
                         """
+
+                        echo "Container running on port ${availablePort}."
                     }
                 }
             }

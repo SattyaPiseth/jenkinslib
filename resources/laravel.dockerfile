@@ -2,12 +2,12 @@
 FROM composer:2 AS builder
 WORKDIR /app
 
-# Copy composer files and install dependencies
+# Ensure necessary files are available
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --prefer-dist --no-scripts --no-interaction
 
 # Copy application source
-COPY . .
+COPY . . 
 RUN composer dump-autoload --optimize
 
 # Stage 2: Production Stage
@@ -25,8 +25,7 @@ RUN apk add --no-cache \
     libzip-dev \
     oniguruma-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo_mysql mbstring zip gd \
-    && apk del --no-cache .build-deps
+    && docker-php-ext-install pdo_mysql mbstring zip gd
 
 # Set working directory
 WORKDIR /var/www
