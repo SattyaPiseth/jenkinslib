@@ -35,4 +35,4 @@ COPY --from=build /app/build/libs/*.jar /app/
 EXPOSE 8080
 
 # Set the entrypoint to run the application with dynamic JAR file name
-ENTRYPOINT ["sh", "-c", "java -jar -Dspring.profiles.active=stage /app/$(ls /app | grep .jar)"]
+ENTRYPOINT ["sh", "-c", "java -jar -Dspring.profiles.active=dev /app/$(ls /app | grep .jar)"]
