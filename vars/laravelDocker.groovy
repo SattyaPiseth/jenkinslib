@@ -13,7 +13,7 @@ def call(Map config = [:]) {
         stages {
             stage('Git Clone') {
                 steps {
-                    git branch: 'main', url: 'https://github.com/SattyaPiseth/store-istad.git'
+                    git branch: 'main', url: 'https://github.com/SattyaPiseth/laravel_first_project.git'
                 }
             }
 
