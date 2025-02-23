@@ -20,22 +20,29 @@ pipeline {
         stage('Checkout Jenkins Library') {
             steps {
                 echo "Cloning Jenkins shared library repository..."
-                // This stage checks out the shared library. Adjust as needed.
-                git url: "https://github.com/SattyaPiseth/jenkinslib.git", branch: 'main'
+                // Check out the shared library into its own directory
+                dir('jenkinslib') {
+                    git url: "https://github.com/SattyaPiseth/jenkinslib.git", branch: 'main'
+                }
             }
         }
         stage('Checkout Laravel Project') {
             steps {
-                echo "Checking out repository: ${GIT_REPO} on branch 'main'..."
-                // Explicitly checkout the 'main' branch from your Laravel repository.
-                git branch: 'main', url: "${GIT_REPO}"
+                // Checkout the Laravel project into a separate directory
+                dir('laravel_project') {
+                    echo "Checking out repository: ${GIT_REPO} on branch 'main'..."
+                    git branch: 'main', url: "${GIT_REPO}"
+                }
             }
         }
         stage('Build Docker Image') {
             steps {
-                script {
-                    echo "Building Docker image ${IMAGE_NAME}:${DOCKER_TAG} using ${DOCKERFILE}..."
-                    dockerImage = docker.build("${IMAGE_NAME}:${DOCKER_TAG}", "-f ${DOCKERFILE} .")
+                // Switch to the Laravel project directory so that the Dockerfile is available
+                dir('laravel_project') {
+                    script {
+                        echo "Building Docker image ${IMAGE_NAME}:${DOCKER_TAG} using ${DOCKERFILE}..."
+                        dockerImage = docker.build("${IMAGE_NAME}:${DOCKER_TAG}", "-f ${DOCKERFILE} .")
+                    }
                 }
             }
         }
